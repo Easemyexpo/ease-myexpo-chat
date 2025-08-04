@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyANWZbTWgy6Ish2i2cMWmpP1hMBvsQtWYk",
-  authDomain: "institutesgoonline.firebaseapp.com",
-  projectId: "institutesgoonline",
-  storageBucket: "institutesgoonline.firebasestorage.app",
-  messagingSenderId: "320362527815",
-  appId: "1:320362527815:web:26831ee8be507e14080562",
-  measurementId: "G-PFMQ5B2FH1",
+  apiKey: "AIzaSyAcqnpXZDuGxRKi3KGo24i3NER62tIFxuo",
+  authDomain: "emep-81e20.firebaseapp.com",
+  projectId: "emep-81e20",
+  storageBucket: "emep-81e20.firebasestorage.app",
+  messagingSenderId: "950542308559",
+  appId: "1:950542308559:web:1efbd5cadcf7fa1a7e13ba",
+  measurementId: "G-EGM0YNYSP0"
 };
 
 // Initialize Firebase
