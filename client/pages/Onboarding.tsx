@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithCredential,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "../lib/firebase";
@@ -87,12 +91,12 @@ export default function Onboarding() {
             }
 
             // Check if user came from Google login
-            const fromGoogleLogin = sessionStorage.getItem('fromGoogleLogin');
+            const fromGoogleLogin = sessionStorage.getItem("fromGoogleLogin");
 
             // Only show Google UI and pre-fill if they came from Google login
             if (userData.isGoogleAuth && fromGoogleLogin) {
               // Clear the flag immediately after checking
-              sessionStorage.removeItem('fromGoogleLogin');
+              sessionStorage.removeItem("fromGoogleLogin");
 
               setIsGoogleAuth(true);
               setGoogleAuthData({
@@ -100,11 +104,11 @@ export default function Onboarding() {
                 name: userData.name || "",
                 email: userData.email || "",
                 photoURL: userData.profilePictureUrl || "",
-                isGoogleAuth: true
+                isGoogleAuth: true,
               });
 
               // Pre-populate form data from database
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
                 name: userData.name || "",
                 email: userData.email || "",
@@ -116,9 +120,9 @@ export default function Onboarding() {
 
               // If we have a profile picture URL, set it as preview
               if (userData.profilePictureUrl) {
-                setPreviews(prev => ({
+                setPreviews((prev) => ({
                   ...prev,
-                  profilePicture: userData.profilePictureUrl
+                  profilePicture: userData.profilePictureUrl,
                 }));
               }
 
@@ -128,7 +132,7 @@ export default function Onboarding() {
               setIsGoogleAuth(false);
               setGoogleAuthData(null);
 
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
                 name: "",
                 email: "",
@@ -169,7 +173,7 @@ export default function Onboarding() {
     return () => {
       // Only clear if not currently submitting
       if (!isLoading) {
-        sessionStorage.removeItem('isOnboardingFlow');
+        sessionStorage.removeItem("isOnboardingFlow");
       }
     };
   }, [isLoading]);
@@ -193,7 +197,8 @@ export default function Onboarding() {
     if (!url.trim()) return false;
 
     // Comprehensive URL regex that handles various formats
-    const urlRegex = /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/i;
+    const urlRegex =
+      /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/i;
 
     return urlRegex.test(url.trim());
   };
@@ -236,11 +241,17 @@ export default function Onboarding() {
   };
 
   const isVisitorProfileStepValid = (): boolean => {
+    // Check if profile picture is available (either uploaded file or Google profile picture)
+    const hasProfilePicture =
+      formData.profilePicture !== null ||
+      (isGoogleAuth && googleAuthData.photoURL) ||
+      previews.profilePicture !== null;
+
     return (
-      formData.profilePicture !== null &&
+      hasProfilePicture &&
       formData.shortBio.trim() !== "" &&
-      (formData.linkedinWebsite.trim() === "" ||
-        validateURL(formData.linkedinWebsite))
+      formData.linkedinWebsite.trim() !== "" &&
+      validateURL(formData.linkedinWebsite)
     );
   };
 
@@ -422,10 +433,7 @@ export default function Onboarding() {
 
         // Upload brochure if provided
         if (formData.catalogBrochure) {
-          brochureUrl = await uploadBrochure(
-            formData.catalogBrochure,
-            userId,
-          );
+          brochureUrl = await uploadBrochure(formData.catalogBrochure, userId);
         }
       } else {
         // Upload profile picture for visitor if provided
@@ -468,6 +476,7 @@ export default function Onboarding() {
           industry: formData.industry,
           companyLogoUrl,
           brochureUrl,
+          interests: [formData.industry],
         });
       } else {
         Object.assign(userData, {
@@ -602,12 +611,9 @@ export default function Onboarding() {
               src={EasemyexpoLogo}
               alt="Easemyexpo"
               className="h-[37px] w-auto"
-            />&nbsp;&nbsp;&nbsp;
-            <img
-              src={MSMLogo}
-              alt="Easemyexpo"
-              className="h-[42px] w-auto"
             />
+            &nbsp;&nbsp;&nbsp;
+            <img src={MSMLogo} alt="Easemyexpo" className="h-[42px] w-auto" />
           </div>
 
           {/* Login Link */}
@@ -743,14 +749,30 @@ export default function Onboarding() {
                 {isGoogleAuth && (
                   <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M18 9.20454C18 8.56636 17.9427 7.95272 17.8364 7.36363H10V10.845H14.8436C14.635 11.97 14.0009 12.9231 13.0477 13.5613V15.8195H15.9564C17.6582 14.2527 18 11.9454 18 9.20454Z" fill="#4285F4"/>
-                      <path d="M10 19C12.43 19 14.4673 18.1941 15.9564 16.8195L13.0477 14.5613C12.2418 15.1013 11.2109 15.4204 10 15.4204C7.65591 15.4204 5.67182 13.8372 4.96409 11.71H1.95727V14.0418C3.43818 16.9831 6.48182 19 10 19Z" fill="#34A853"/>
-                      <path d="M4.96409 11.71C4.78409 11.17 4.68182 10.5932 4.68182 10C4.68182 9.40682 4.78409 8.83 4.96409 8.29V5.95818H1.95727C1.34773 7.17318 1 8.54772 1 10C1 11.4523 1.34773 12.8268 1.95727 14.0418L4.96409 11.71Z" fill="#FBBC04"/>
-                      <path d="M10 4.57955C11.3214 4.57955 12.5077 5.03364 13.4405 5.92545L16.0218 3.34409C14.4632 1.89182 12.4259 1 10 1C6.48182 1 3.43818 3.01682 1.95727 5.95818L4.96409 8.29C5.67182 6.16273 7.65591 4.57955 10 4.57955Z" fill="#EA4335"/>
+                      <path
+                        d="M18 9.20454C18 8.56636 17.9427 7.95272 17.8364 7.36363H10V10.845H14.8436C14.635 11.97 14.0009 12.9231 13.0477 13.5613V15.8195H15.9564C17.6582 14.2527 18 11.9454 18 9.20454Z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M10 19C12.43 19 14.4673 18.1941 15.9564 16.8195L13.0477 14.5613C12.2418 15.1013 11.2109 15.4204 10 15.4204C7.65591 15.4204 5.67182 13.8372 4.96409 11.71H1.95727V14.0418C3.43818 16.9831 6.48182 19 10 19Z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M4.96409 11.71C4.78409 11.17 4.68182 10.5932 4.68182 10C4.68182 9.40682 4.78409 8.83 4.96409 8.29V5.95818H1.95727C1.34773 7.17318 1 8.54772 1 10C1 11.4523 1.34773 12.8268 1.95727 14.0418L4.96409 11.71Z"
+                        fill="#FBBC04"
+                      />
+                      <path
+                        d="M10 4.57955C11.3214 4.57955 12.5077 5.03364 13.4405 5.92545L16.0218 3.34409C14.4632 1.89182 12.4259 1 10 1C6.48182 1 3.43818 3.01682 1.95727 5.95818L4.96409 8.29C5.67182 6.16273 7.65591 4.57955 10 4.57955Z"
+                        fill="#EA4335"
+                      />
                     </svg>
                     <div>
-                      <p className="text-[14px] font-semibold text-green-800">Continuing with Google Account</p>
-                      <p className="text-[12px] text-green-600">Please complete your profile information below</p>
+                      <p className="text-[14px] font-semibold text-green-800">
+                        Continuing with Google Account
+                      </p>
+                      <p className="text-[12px] text-green-600">
+                        Please complete your profile information below
+                      </p>
                     </div>
                   </div>
                 )}
@@ -796,13 +818,24 @@ export default function Onboarding() {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     disabled={isGoogleAuth}
-                    className={`w-full h-[43.765px] px-[14.588px] py-[7.294px] border ${getFieldValidationClass(validateEmail(formData.email), formData.email.length > 0)} rounded-[7.294px] text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)] ${isGoogleAuth ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    className={`w-full h-[43.765px] px-[14.588px] py-[7.294px] border ${getFieldValidationClass(validateEmail(formData.email), formData.email.length > 0)} rounded-[7.294px] text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)] ${isGoogleAuth ? "bg-gray-100 cursor-not-allowed" : "bg-white"}`}
                     placeholder="Enter your email address"
                   />
                   {isGoogleAuth && (
                     <p className="text-[#10B981] text-[11px] mt-1 flex items-center gap-1">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M10 3L4.5 8.5L2 6" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                      >
+                        <path
+                          d="M10 3L4.5 8.5L2 6"
+                          stroke="#10B981"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       Verified via Google Account
                     </p>
@@ -811,58 +844,58 @@ export default function Onboarding() {
 
                 {/* Password Fields - Hidden for Google Auth */}
                 {!isGoogleAuth && (
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-[22px]">
-                  <div className="w-full sm:w-[190px]">
-                    <div className="flex items-start gap-[1.824px] mb-[7.294px]">
-                      <span className="text-[14.588px] text-[#26203B] font-poppins">
-                        Password
-                      </span>
-                      <span className="text-[14.588px] text-[#E45270] font-dm-sans">
-                        *
-                      </span>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-[22px]">
+                    <div className="w-full sm:w-[190px]">
+                      <div className="flex items-start gap-[1.824px] mb-[7.294px]">
+                        <span className="text-[14.588px] text-[#26203B] font-poppins">
+                          Password
+                        </span>
+                        <span className="text-[14.588px] text-[#E45270] font-dm-sans">
+                          *
+                        </span>
+                      </div>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
+                        className={`w-full h-[43.765px] px-[14.588px] py-[12.382px] border ${getFieldValidationClass(validatePassword(formData.password), formData.password.length > 0)} rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)]`}
+                        placeholder="Enter password"
+                      />
+                      {formData.password.length > 0 &&
+                        !validatePassword(formData.password) && (
+                          <p className="text-[#E45270] text-[11px] mt-1">
+                            Password must be at least 6 characters long
+                          </p>
+                        )}
                     </div>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        handleInputChange("password", e.target.value)
-                      }
-                      className={`w-full h-[43.765px] px-[14.588px] py-[12.382px] border ${getFieldValidationClass(validatePassword(formData.password), formData.password.length > 0)} rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)]`}
-                      placeholder="Enter password"
-                    />
-                    {formData.password.length > 0 &&
-                      !validatePassword(formData.password) && (
-                        <p className="text-[#E45270] text-[11px] mt-1">
-                          Password must be at least 6 characters long
-                        </p>
-                      )}
-                  </div>
-                  <div className="w-full sm:w-[190px]">
-                    <div className="flex items-start gap-[1.824px] mb-[7.294px]">
-                      <span className="text-[14.588px] text-[#26203B] font-poppins">
-                        Confirm Password
-                      </span>
-                      <span className="text-[14.588px] text-[#E45270] font-dm-sans">
-                        *
-                      </span>
+                    <div className="w-full sm:w-[190px]">
+                      <div className="flex items-start gap-[1.824px] mb-[7.294px]">
+                        <span className="text-[14.588px] text-[#26203B] font-poppins">
+                          Confirm Password
+                        </span>
+                        <span className="text-[14.588px] text-[#E45270] font-dm-sans">
+                          *
+                        </span>
+                      </div>
+                      <input
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) =>
+                          handleInputChange("confirmPassword", e.target.value)
+                        }
+                        className={`w-full h-[43.765px] px-[14.588px] py-[12.382px] border ${getFieldValidationClass(formData.password === formData.confirmPassword && formData.confirmPassword.length > 0, formData.confirmPassword.length > 0)} rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)]`}
+                        placeholder="Confirm your password"
+                      />
+                      {formData.confirmPassword.length > 0 &&
+                        formData.password !== formData.confirmPassword && (
+                          <p className="text-[#E45270] text-[11px] mt-1">
+                            Passwords do not match
+                          </p>
+                        )}
                     </div>
-                    <input
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        handleInputChange("confirmPassword", e.target.value)
-                      }
-                      className={`w-full h-[43.765px] px-[14.588px] py-[12.382px] border ${getFieldValidationClass(formData.password === formData.confirmPassword && formData.confirmPassword.length > 0, formData.confirmPassword.length > 0)} rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)]`}
-                      placeholder="Confirm your password"
-                    />
-                    {formData.confirmPassword.length > 0 &&
-                      formData.password !== formData.confirmPassword && (
-                        <p className="text-[#E45270] text-[11px] mt-1">
-                          Passwords do not match
-                        </p>
-                      )}
                   </div>
-                </div>
                 )}
 
                 {/* Phone Number Field */}
