@@ -247,12 +247,7 @@ export default function Onboarding() {
       (isGoogleAuth && googleAuthData.photoURL) ||
       previews.profilePicture !== null;
 
-    return (
-      hasProfilePicture &&
-      formData.shortBio.trim() !== "" &&
-      formData.linkedinWebsite.trim() !== "" &&
-      validateURL(formData.linkedinWebsite)
-    );
+    return hasProfilePicture && formData.shortBio.trim() !== "";
   };
 
   // Get current step validation status
@@ -1449,27 +1444,6 @@ export default function Onboarding() {
                     }
                     className="w-full h-[80px] px-[14.588px] py-[7.294px] border border-[rgba(16,185,129,0.4)] rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)] resize-none"
                     placeholder=""
-                  />
-                </div>
-
-                {/* Add LinkedIn or Website */}
-                <div className="w-full max-w-[403px]">
-                  <div className="flex items-start gap-[1.824px] mb-[7.294px]">
-                    <span className="text-[14.588px] text-[#26203B] font-poppins">
-                      Add LinkedIn or Website
-                    </span>
-                    <span className="text-[14.588px] text-[#E45270] font-dm-sans">
-                      *
-                    </span>
-                  </div>
-                  <input
-                    type="url"
-                    value={formData.linkedinWebsite}
-                    onChange={(e) =>
-                      handleInputChange("linkedinWebsite", e.target.value)
-                    }
-                    className="w-full h-[43.765px] px-[14.588px] py-[7.294px] border border-[rgba(16,185,129,0.4)] rounded-[7.294px] bg-white text-[12.765px] text-[#26203B] outline-none focus:border-[#10B981] focus:shadow-[0_3.647px_7.294px_0_rgba(70,95,241,0.1)]"
-                    placeholder="Enter your website URL"
                   />
                 </div>
               </div>
